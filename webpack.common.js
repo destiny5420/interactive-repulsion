@@ -1,8 +1,8 @@
-const webpack = require('webpack');
-const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CopyPlugin = require('copy-webpack-plugin');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const webpack = require('webpack')
+const path = require('path')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const CopyPlugin = require('copy-webpack-plugin')
+const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 
 module.exports = {
   entry: {
@@ -14,7 +14,7 @@ module.exports = {
   },
   resolve: {
     alias: {
-      styles: path.resolve(__dirname, './src/styles/'),
+      styles: path.resolve(__dirname, './src/style/'),
     },
   },
   module: {
@@ -45,4 +45,4 @@ module.exports = {
       template: 'src/index.html',
     }),
   ],
-};
+}
