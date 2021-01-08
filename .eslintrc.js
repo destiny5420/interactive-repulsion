@@ -11,5 +11,7 @@ module.exports = {
   plugins: ['prettier'],
   rules: {
     'class-methods-use-this': 0,
+    'no-restricted-properties': 0,
+    'no-plusplus': 0,
   },
 }
