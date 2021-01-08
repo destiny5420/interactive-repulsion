@@ -1,3 +1,3 @@
-// import App from './scripts/app';
+import App from './scripts/app'
 
-// console.log('hello');
+new App().init()
