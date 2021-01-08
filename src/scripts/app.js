@@ -1,6 +1,8 @@
 // eslint-disable-next-line import/no-unresolved
-import 'styles/index.scss'
+import '@/style/index.scss'
 import * as THREE from 'three'
+import Cone from './elements/cone'
+import Torus from './elements/torus'
 
 export default class App {
   setup() {
@@ -10,19 +12,19 @@ export default class App {
     this.width = window.innerWidth
     this.height = window.innerHeight
     this.mouse3D = new THREE.Vector2()
-    this.geometries = []
+    this.geometries = [new Cone(), new Torus()]
 
     this.raycaster = new THREE.Raycaster()
   }
 
   createScene() {
     this.scene = new THREE.Scene()
-    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false })
+    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
     this.renderer.setSize(window.innerWidth, window.innerHeight)
     this.renderer.setPixelRatio(window.devicePixelRatio)
 
-    // this.renderer.shadowMap.enabled = true;
-    // this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.shadowMap.enabled = true
+    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
 
     document.body.appendChild(this.renderer.domElement)
   }
@@ -46,12 +48,12 @@ export default class App {
   }
 
   addSpotLight() {
-    const ligh = new THREE.SpotLight('#7bccd7', 1, 1000)
+    const light = new THREE.SpotLight('#7bccd7', 1, 1000)
 
-    ligh.position.set(0, 27, 0)
-    ligh.castShadow = true
+    light.position.set(0, 27, 0)
+    light.castShadow = true
 
-    this.scene.add(ligh)
+    this.scene.add(light)
   }
 
   addRectLight() {
@@ -83,6 +85,133 @@ export default class App {
     this.scene.add(this.floor)
   }
 
+  getRandomGeometry() {
+    return this.geometries[
+      Math.floor(Math.random() * Math.floor(this.geometries.length))
+    ]
+  }
+
+  createGrid() {
+    this.groupMesh = new THREE.Object3D()
+
+    const material = new THREE.MeshPhysicalMaterial({
+      color: '#3e2917',
+      metalness: 0.58,
+      emissive: '#000000',
+      roughness: 0.05,
+    })
+
+    for (let row = 0; row < this.grid.rows; row++) {
+      this.meshes[row] = []
+
+      for (let index = 0; index < 1; index++) {
+        const totalCol = this.getTotalRows(row)
+
+        for (let col = 0; col < totalCol; col++) {
+          const geometry = this.getRandomGeometry()
+          const mesh = this.getMesh(geometry.geom, material)
+
+          mesh.position.y = 0
+          mesh.position.x =
+            col +
+            col * this.gutter.size +
+            (totalCol === this.grid.cols ? 0 : 2.5)
+          mesh.position.z = row + row * (index + 0.25)
+
+          mesh.rotation.x = geometry.rotationX
+          mesh.rotation.y = geometry.rotationY
+          mesh.rotation.z = geometry.rotationZ
+
+          mesh.initialRotation = {
+            x: mesh.rotation.x,
+            y: mesh.rotation.y,
+            z: mesh.rotation.z,
+          }
+
+          this.groupMesh.add(mesh)
+
+          this.meshes[row][col] = mesh
+        }
+      }
+    }
+
+    const centerX = -(this.grid.cols / 2) * this.gutter.size - 1
+    const centerZ = -(this.grid.rows / 2) - 0.8
+
+    this.groupMesh.position.set(centerX, 0, centerZ)
+
+    this.scene.add(this.groupMesh)
+  }
+
+  getTotalRows(col) {
+    return col % 2 === 0 ? this.grid.cols : this.grid.cols - 1
+  }
+
+  getMesh(geometry, material) {
+    const mesh = new THREE.Mesh(geometry, material)
+
+    mesh.castShadow = true
+    mesh.receiveShadow = true
+
+    return mesh
+  }
+
+  draw() {
+    // this.raycaster.setFromCamera(this.mouse3D, this.camera)
+    // const intersects = this.raycaster.intersectObjects([this.floor])
+    // if (intersects.length) {
+    //   const { x, z } = intersects[0].point
+    //   for (let row = 0; row < this.grid.rows; row++) {
+    //     for (let index = 0; index < 1; index++) {
+    //       const totalCols = this.getTotalRows(row)
+    //       for (let col = 0; col < totalCols; col++) {
+    //         const mesh = this.meshes[row][col]
+    //         const mouseDistance = distance(
+    //           x,
+    //           z,
+    //           mesh.position.x + this.groupMesh.position.x,
+    //           mesh.position.z + this.groupMesh.position.z
+    //         )
+    //         const y = map(mouseDistance, 7, 0, 0, 6)
+    //         TweenMax.to(mesh.position, 0.3, { y: y < 1 ? 1 : y })
+    //         const scaleFactor = mesh.position.y / 1.2
+    //         const scale = scaleFactor < 1 ? 1 : scaleFactor
+    //         TweenMax.to(mesh.scale, 0.3, {
+    //           ease: Expo.easeOut,
+    //           x: scale,
+    //           y: scale,
+    //           z: scale,
+    //         })
+    //         TweenMax.to(mesh.rotation, 0.7, {
+    //           ease: Expo.easeOut,
+    //           x: map(
+    //             mesh.position.y,
+    //             -1,
+    //             1,
+    //             radians(270),
+    //             mesh.initialRotation.x
+    //           ),
+    //           z: map(
+    //             mesh.position.y,
+    //             -1,
+    //             1,
+    //             radians(-90),
+    //             mesh.initialRotation.z
+    //           ),
+    //           y: map(
+    //             mesh.position.y,
+    //             -1,
+    //             1,
+    //             radians(45),
+    //             mesh.initialRotation.y
+    //           ),
+    //         })
+    //       }
+    //     }
+    //   }
+    // }
+  }
+
   init() {
     console.log('app.js init')
 
@@ -92,9 +221,9 @@ export default class App {
 
     this.createCamera()
 
-    // this.createGrid();
+    this.createGrid()
 
-    // this.addFloor();
+    this.addFloor()
 
     this.addAmbientLight()
 
@@ -107,5 +236,12 @@ export default class App {
     this.addPointLight(0x79573e, { x: 100, y: 10, z: 0 })
 
     this.addPointLight(0xc27439, { x: 20, y: 5, z: 20 })
+
+    this.animate()
+  }
+
+  animate() {
+    this.renderer.render(this.scene, this.camera)
+    requestAnimationFrame(this.animate.bind(this))
   }
 }
